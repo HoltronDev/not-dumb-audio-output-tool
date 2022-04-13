@@ -5,4 +5,10 @@
 #include <Windows.h>
 #include <shellapi.h>
 #include "resource.h"
+#include <mmdeviceapi.h>
+#include <stdlib.h>
+#include <functiondiscoverykeys_devpkey.h>
+#include <vector>
+#include <string>
+#include <atlstr.h>
 #endif
