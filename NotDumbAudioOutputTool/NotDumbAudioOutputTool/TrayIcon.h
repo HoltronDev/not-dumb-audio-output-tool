@@ -1,12 +1,13 @@
 #pragma once
 
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <shellapi.h>
-//#include <tchar.h>
+#include "platform.h"
 
 #define WM_MYMESSAGE (WM_USER + 1)
+#define MAX_LOADSTRING 100
+#define IDS_APP_TITLE 103
+#define IDI_TRAYICON 107
+#define IDI_SMALL 108
+#define IDC_TRAYICON 109
 
 class TrayIcon
 {
@@ -15,7 +16,9 @@ class TrayIcon
 		void CreateIcon(HWND hWnd);
 		void DeleteIcon(HWND hWnd);
 		void ModifyIcon(HWND hWnd);
-		LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-		//int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow);
+		int RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
+		ATOM MyRegisterClass(HINSTANCE hInstance);
+		BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
+		//LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
