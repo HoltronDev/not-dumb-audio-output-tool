@@ -44,11 +44,11 @@ void CreateIcon(HWND hWnd)
 	nid.uID = 100;
 	nid.uVersion = NOTIFYICON_VERSION;
 	nid.uCallbackMessage = WM_MYMESSAGE;
-	nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));//LoadIcon(NULL, MAKEINTRESOURCE(IDI_QUESTION));
+	nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));
 	wcscpy_s(nid.szTip, L"Audio Outputs");
-	nid.uFlags = NIF_MESSAGE & NIF_ICON & NIF_TIP;
+	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 
-	Shell_NotifyIcon(NIM_ADD, &nid);
+	auto success = !Shell_NotifyIcon(NIM_ADD, &nid);
 }
 
 void DeleteIcon(HWND hWnd)

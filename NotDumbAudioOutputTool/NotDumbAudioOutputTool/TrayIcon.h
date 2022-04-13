@@ -8,7 +8,6 @@
 #define IDI_TRAYICON 107
 #define IDI_SMALL 108
 #define IDC_TRAYICON 109
-#define IDI_ICON1 101
 
 class TrayIcon
 {
