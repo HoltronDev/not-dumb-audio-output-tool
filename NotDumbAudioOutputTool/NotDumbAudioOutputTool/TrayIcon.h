@@ -8,17 +8,14 @@
 #define IDI_TRAYICON 107
 #define IDI_SMALL 108
 #define IDC_TRAYICON 109
+#define IDI_ICON1 101
 
 class TrayIcon
 {
 	public:
 		NOTIFYICONDATA nid;
-		void CreateIcon(HWND hWnd);
-		void DeleteIcon(HWND hWnd);
-		void ModifyIcon(HWND hWnd);
 		int RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
 		ATOM MyRegisterClass(HINSTANCE hInstance);
 		BOOL InitInstance(HINSTANCE hInstance, int nCmdShow);
-		//LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 

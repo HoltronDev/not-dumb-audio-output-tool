@@ -153,12 +153,19 @@
   <ItemGroup>
     <ClInclude Include="AudioOutputHandler.h" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="TrayIcon.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AudioOutputHandler.cpp" />
     <ClCompile Include="TrayIcon.cpp" />
     <ClCompile Include="_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="NotDumbAudioOutputTool.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="C:\Users\benho\Downloads\trayIcon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

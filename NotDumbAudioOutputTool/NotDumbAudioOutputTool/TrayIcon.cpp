@@ -6,11 +6,14 @@ WCHAR szTitle[MAX_LOADSTRING];
 WCHAR szWindowClass[MAX_LOADSTRING];
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void CreateIcon(HWND hWnd);
+void DeleteIcon(HWND hWnd);
+void ModifyIcon(HWND hWnd);
 
 int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,	int nCmdShow)
 {
-	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-	LoadStringW(hInstance, IDC_TRAYICON, szWindowClass, MAX_LOADSTRING);
+	wcscpy_s(szTitle, L"Something");
+	wcscpy_s(szWindowClass, L"Some Window Class");
 
 	MyRegisterClass(hInstance);
 
@@ -41,8 +44,8 @@ void CreateIcon(HWND hWnd)
 	nid.uID = 100;
 	nid.uVersion = NOTIFYICON_VERSION;
 	nid.uCallbackMessage = WM_MYMESSAGE;
-	nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wcscpy_s(nid.szTip, L"Tray Icon");
+	nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_ICON1));//LoadIcon(NULL, MAKEINTRESOURCE(IDI_QUESTION));
+	wcscpy_s(nid.szTip, L"Audio Outputs");
 	nid.uFlags = NIF_MESSAGE & NIF_ICON & NIF_TIP;
 
 	Shell_NotifyIcon(NIM_ADD, &nid);
@@ -70,16 +73,17 @@ BOOL TrayIcon::InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // Store instance handle in our global variable
 
-	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	HWND hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-	/*if (!hWnd)
+	if (!hWnd)
 	{
 		return FALSE;
 	}
 
-	ShowWindow(hWnd, nCmdShow);
-	UpdateWindow(hWnd);*/
+	//ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+	CreateIcon(hWnd);
 
 	return TRUE;
 }
@@ -116,7 +120,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONDBLCLK:
-			MessageBox(NULL, L"Tray icon duble clicked!", L"clicked", MB_OK);
+			MessageBox(NULL, L"Tray icon double clicked!", L"clicked", MB_OK);
 			break;
 		default: return DefWindowProc(hWnd, msg, wParam, lParam);
 		};
