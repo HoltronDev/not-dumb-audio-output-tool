@@ -23,7 +23,7 @@ void DeleteIcon(HWND hWnd);
 void ModifyIcon(HWND hWnd);
 void HandleOutputsMenu(HWND hWnd);
 void HandleOutputsSelection(WPARAM wParam, LPARAM lParam);
-void GetAudioEndpoints(std::vector<std::wstring> names);
+std::vector<std::wstring> GetAudioEndpoints();
 
 int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,	int nCmdShow)
 {
@@ -165,11 +165,9 @@ void HandleOutputsMenu(HWND hWnd)
 
 	audioOutputsMenu = CreatePopupMenu();
 
-	std::vector<std::wstring> deviceNames;
+	auto deviceNames = GetAudioEndpoints();
 
-	GetAudioEndpoints(deviceNames);
-
-	for (int i = 0; i < deviceNames.size(); i++)
+	for (auto i = 0; i < deviceNames.size(); i++)
 	{
 		InsertMenu(audioOutputsMenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT + (i + 1), deviceNames.at(i).c_str());
 	}
@@ -197,7 +195,7 @@ void HandleOutputsSelection(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-void GetAudioEndpoints(std::vector<std::wstring> names) 
+std::vector<std::wstring> GetAudioEndpoints()
 {
 	HRESULT hr = S_OK;
 	IMMDeviceEnumerator* pEnumerator = NULL;
@@ -205,43 +203,45 @@ void GetAudioEndpoints(std::vector<std::wstring> names)
 	IMMDevice* pEndpoint = NULL;
 	IPropertyStore* pProps = NULL;
 	LPWSTR pwszID = NULL;
+	std::vector<std::wstring> names;
 
 	hr = CoCreateInstance(
 		CLSID_MMDeviceEnumerator, NULL,
 		CLSCTX_ALL, IID_IMMDeviceEnumerator,
 		(void**)&pEnumerator);
+	EXIT_ON_ERROR(hr)
 
-		hr = pEnumerator->EnumAudioEndpoints(
-			eRender, DEVICE_STATE_ACTIVE,
-			&pCollection);
+	hr = pEnumerator->EnumAudioEndpoints(
+		eRender, DEVICE_STATE_ACTIVE,
+		&pCollection);
+	EXIT_ON_ERROR(hr)
 
-		UINT  count;
+	UINT  count;
 	hr = pCollection->GetCount(&count);
+	EXIT_ON_ERROR(hr)
 
-		if (count == 0)
-		{
-			return;
-		}
-
+	if (count == 0)
+	{
+		return names;
+	}
 	// Each loop prints the name of an endpoint device.
 	for (ULONG i = 0; i < count; i++)
 	{
 		// Get pointer to endpoint number i.
 		hr = pCollection->Item(i, &pEndpoint);
 
-			// Get the endpoint ID string.
-			hr = pEndpoint->GetId(&pwszID);
+		// Get the endpoint ID string.
+		hr = pEndpoint->GetId(&pwszID);
 
-			hr = pEndpoint->OpenPropertyStore(
-				STGM_READ, &pProps);
+		hr = pEndpoint->OpenPropertyStore(
+			STGM_READ, &pProps);
 
-			PROPVARIANT varName;
+		PROPVARIANT varName;
 		// Initialize container for property value.
 		PropVariantInit(&varName);
 
 		// Get the endpoint's friendly-name property.
-		hr = pProps->GetValue(
-			PKEY_Device_FriendlyName, &varName);
+		hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);
 
 		names.emplace_back(varName.pwszVal);
 
@@ -253,5 +253,14 @@ void GetAudioEndpoints(std::vector<std::wstring> names)
 	}
 	SAFE_RELEASE(pEnumerator)
 	SAFE_RELEASE(pCollection)
-	return;
+	return names;
+
+Exit:
+	MessageBox(NULL, L"Something went wrong trying to get your audio devices!.", L"Error!", MB_OK);
+	CoTaskMemFree(pwszID);
+	SAFE_RELEASE(pEnumerator)
+	SAFE_RELEASE(pCollection)
+	SAFE_RELEASE(pEndpoint)
+	SAFE_RELEASE(pProps)
+	return names;
 }
