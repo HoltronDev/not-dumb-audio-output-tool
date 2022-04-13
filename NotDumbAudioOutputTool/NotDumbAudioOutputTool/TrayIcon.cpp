@@ -22,7 +22,7 @@ void CreateIcon(HWND hWnd);
 void DeleteIcon(HWND hWnd);
 void ModifyIcon(HWND hWnd);
 void HandleOutputsMenu(HWND hWnd);
-void HandleOutputsSelection(WPARAM wParam, LPARAM lParam);
+void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam);
 std::vector<std::wstring> GetAudioEndpoints();
 
 int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,	int nCmdShow)
@@ -149,7 +149,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		};
 		break;
 	case WM_COMMAND:
-		HandleOutputsSelection(wParam, lParam);
+		HandleOutputsSelection(hWnd, wParam, lParam);
 	case WM_DESTROY:
 		DeleteIcon(hWnd);
 	default:
@@ -180,7 +180,7 @@ void HandleOutputsMenu(HWND hWnd)
 	PostMessage(hWnd, WM_NULL, 0, 0);
 }
 
-void HandleOutputsSelection(WPARAM wParam, LPARAM lParam)
+void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
 	if (lParam != 0) 
 	{
@@ -190,7 +190,8 @@ void HandleOutputsSelection(WPARAM wParam, LPARAM lParam)
 	switch (LOWORD(wParam))
 	{
 	case IDM_EXIT:
-		MessageBox(NULL, L"Exit clicked.", L"clicked", MB_OK);
+		//MessageBox(NULL, L"Exit clicked.", L"clicked", MB_OK);
+		PostMessage(hWnd, WM_QUIT, 0, 0);
 		break;
 	}
 }
