@@ -18,9 +18,9 @@ WCHAR szTitle[MAX_LOADSTRING];
 WCHAR szWindowClass[MAX_LOADSTRING];
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-void CreateIcon(HWND hWnd);
-void DeleteIcon(HWND hWnd);
-void ModifyIcon(HWND hWnd);
+void CreateTrayIcon(HWND hWnd);
+void RemoveTrayIcon(HWND hWnd);
+void ModifyTrayIcon(HWND hWnd);
 void HandleOutputsMenu(HWND hWnd);
 void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam);
 std::vector<std::wstring> GetAudioEndpoints();
@@ -56,7 +56,7 @@ int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	return (int)msg.wParam;
 }
 
-void CreateIcon(HWND hWnd) 
+void CreateTrayIcon(HWND hWnd) 
 {
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.hWnd = hWnd;
@@ -70,7 +70,7 @@ void CreateIcon(HWND hWnd)
 	auto success = !Shell_NotifyIcon(NIM_ADD, &nid);
 }
 
-void DeleteIcon(HWND hWnd)
+void RemoveTrayIcon(HWND hWnd)
 {
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.hWnd = hWnd;
@@ -78,7 +78,7 @@ void DeleteIcon(HWND hWnd)
 	Shell_NotifyIcon(NIM_DELETE, &nid);
 }
 
-void ModifyIcon(HWND hWnd)
+void ModifyTrayIcon(HWND hWnd)
 {
 	nid.cbSize = sizeof(NOTIFYICONDATA);
 	nid.hWnd = hWnd;
@@ -102,7 +102,7 @@ BOOL TrayIcon::InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	//ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
-	CreateIcon(hWnd);
+	CreateTrayIcon(hWnd);
 
 	return TRUE;
 }
@@ -133,7 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_CREATE:
-		CreateIcon(hWnd);
+		CreateTrayIcon(hWnd);
 		break;
 	case WM_MYMESSAGE:
 		switch (lParam)
@@ -150,8 +150,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_COMMAND:
 		HandleOutputsSelection(hWnd, wParam, lParam);
-	case WM_DESTROY:
-		DeleteIcon(hWnd);
+		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	};
@@ -191,7 +190,12 @@ void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	{
 	case IDM_EXIT:
 		//MessageBox(NULL, L"Exit clicked.", L"clicked", MB_OK);
+		RemoveTrayIcon(hWnd);
 		PostMessage(hWnd, WM_QUIT, 0, 0);
+		break;
+	default:
+		if (wParam - 200 < 1) break;
+		// Do things here.
 		break;
 	}
 }
