@@ -48,7 +48,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="C:\Users\benho\Downloads\trayIcon.ico">
+    <Image Include="trayIcon.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

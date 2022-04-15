@@ -166,7 +166,7 @@
     <ResourceCompile Include="NotDumbAudioOutputTool.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="C:\Users\benho\Downloads\trayIcon.ico" />
+    <Image Include="trayIcon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
