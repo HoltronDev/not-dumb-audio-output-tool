@@ -140,10 +140,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (lParam)
 		{
 		case WM_LBUTTONUP:
-			HandleOutputsMenu(hWnd);
-			break;
 		case WM_RBUTTONUP:
-			ShowWindow(hWnd, TRUE);
+			HandleOutputsMenu(hWnd);
+			//ShowWindow(hWnd, TRUE);
 			break;
 		default: 
 			return DefWindowProc(hWnd, msg, wParam, lParam);
