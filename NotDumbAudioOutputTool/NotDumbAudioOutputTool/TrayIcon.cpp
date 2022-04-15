@@ -3,8 +3,8 @@
 #define EXIT_ON_ERROR(hres)  \
               if (FAILED(hres)) { goto Exit; }
 #define SAFE_RELEASE(punk)  \
-              if ((punk) != NULL)  \
-                { (punk)->Release(); (punk) = NULL; }
+              if ((punk) != nullptr)  \
+                { (punk)->Release(); (punk) = nullptr; }
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
@@ -207,18 +207,18 @@ void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 std::vector<std::wstring> GetAudioEndpoints(int* activeDevice)
 {
 	HRESULT hr = S_OK;
-	IMMDeviceEnumerator* pEnumerator = NULL;
-	IMMDeviceCollection* pCollection = NULL;
-	IMMDevice* pEndpoint = NULL;
-	IPropertyStore* pProps = NULL;
+	IMMDeviceEnumerator* pEnumerator = nullptr;
+	IMMDeviceCollection* pCollection = nullptr;
+	IMMDevice* pEndpoint = nullptr;
+	IPropertyStore* pProps = nullptr;
 	DWORD pdwState = NULL;
-	LPWSTR pwszID = NULL;
-	LPWSTR defaultDeviceId = NULL;
+	LPWSTR pwszID = nullptr;
+	LPWSTR defaultDeviceId = nullptr;
 	std::vector<std::wstring> names;
 	std::wstring defaultDeviceIdReadable;
 
 	hr = CoCreateInstance(
-		CLSID_MMDeviceEnumerator, NULL,
+		CLSID_MMDeviceEnumerator, nullptr,
 		CLSCTX_ALL, IID_IMMDeviceEnumerator,
 		(void**)&pEnumerator);
 	EXIT_ON_ERROR(hr)
@@ -260,7 +260,7 @@ std::vector<std::wstring> GetAudioEndpoints(int* activeDevice)
 
 		if (defaultDeviceIdReadable == currentAudioDeviceId)
 		{
-			*activeDevice = int(i);
+			*activeDevice = static_cast<int>(i);
 		}
 
 		hr = pEndpoint->OpenPropertyStore(
@@ -278,7 +278,7 @@ std::vector<std::wstring> GetAudioEndpoints(int* activeDevice)
 		names.emplace_back(varName.pwszVal);
 
 		CoTaskMemFree(pwszID);
-		pwszID = NULL;
+		pwszID = nullptr;
 		PropVariantClear(&varName);
 		SAFE_RELEASE(pProps)
 		SAFE_RELEASE(pEndpoint)
@@ -288,7 +288,7 @@ std::vector<std::wstring> GetAudioEndpoints(int* activeDevice)
 	return names;
 
 Exit:
-	MessageBox(NULL, L"Something went wrong trying to get your audio devices!.", L"Error!", MB_OK);
+	MessageBox(nullptr, L"Something went wrong trying to get your audio devices!.", L"Error!", MB_OK);
 	CoTaskMemFree(pwszID);
 	SAFE_RELEASE(pEnumerator)
 	SAFE_RELEASE(pCollection)
@@ -300,15 +300,15 @@ Exit:
 void SetDefaultAudioPlaybackDevice(int device)
 {
 	HRESULT hr = S_OK;
-	IMMDeviceEnumerator* pEnumerator = NULL;
-	IMMDeviceCollection* pCollection = NULL;
-	IMMDevice* pEndpoint = NULL;
+	IMMDeviceEnumerator* pEnumerator = nullptr;
+	IMMDeviceCollection* pCollection = nullptr;
+	IMMDevice* pEndpoint = nullptr;
 	LPWSTR devID;
 	IPolicyConfigVista* pPolicyConfig;
 	ERole reserved = eConsole;
 
 	hr = CoCreateInstance(
-		CLSID_MMDeviceEnumerator, NULL,
+		CLSID_MMDeviceEnumerator, nullptr,
 		CLSCTX_ALL, IID_IMMDeviceEnumerator,
 		(void**)&pEnumerator);
 	EXIT_ON_ERROR(hr)
@@ -347,7 +347,7 @@ void SetDefaultAudioPlaybackDevice(int device)
 	return;
 
 Exit:
-	MessageBox(NULL, L"Something went wrong while setting your active audio device!.", L"Error!", MB_OK);
+	MessageBox(nullptr, L"Something went wrong while setting your active audio device!.", L"Error!", MB_OK);
 	SAFE_RELEASE(pEnumerator)
 	SAFE_RELEASE(pCollection)
 	SAFE_RELEASE(pEndpoint)
