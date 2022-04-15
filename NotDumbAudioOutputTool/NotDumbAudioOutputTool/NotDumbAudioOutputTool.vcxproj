@@ -151,14 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AudioOutputHandler.h" />
     <ClInclude Include="platform.h" />
     <ClInclude Include="PolicyConfig.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TrayIcon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AudioOutputHandler.cpp" />
     <ClCompile Include="TrayIcon.cpp" />
     <ClCompile Include="_main.cpp" />
   </ItemGroup>
