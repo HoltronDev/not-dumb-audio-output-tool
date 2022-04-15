@@ -23,7 +23,7 @@ void RemoveTrayIcon(HWND hWnd);
 void ModifyTrayIcon(HWND hWnd);
 void HandleOutputsMenu(HWND hWnd);
 void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam);
-std::vector<std::wstring> GetAudioEndpoints(int& activeDevice);
+std::vector<std::wstring> GetAudioEndpoints(int* activeDevice);
 void SetDefaultAudioPlaybackDevice(int device);
 
 int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,	int nCmdShow)
@@ -68,11 +68,7 @@ void CreateTrayIcon(HWND hWnd)
 	wcscpy_s(nid.szTip, L"Audio Outputs");
 	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 
-	auto success = !Shell_NotifyIcon(NIM_ADD, &nid);
-	if (!success)
-	{
-		MessageBox(NULL, L"An error occurred while trying to create the tray icon.", L"Error!", MB_OK);
-	}
+	Shell_NotifyIcon(NIM_ADD, &nid);
 }
 
 void RemoveTrayIcon(HWND hWnd)
@@ -105,9 +101,7 @@ BOOL TrayIcon::InitInstance(HINSTANCE hInstance, int nCmdShow)
 		return FALSE;
 	}
 
-	//ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
-	CreateTrayIcon(hWnd);
 
 	return TRUE;
 }
@@ -146,7 +140,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
 			HandleOutputsMenu(hWnd);
-			//ShowWindow(hWnd, TRUE);
 			break;
 		default: 
 			return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -168,8 +161,8 @@ void HandleOutputsMenu(HWND hWnd)
 
 	audioOutputsMenu = CreatePopupMenu();
 
-	int activeDevice = -1;
-	auto deviceNames = GetAudioEndpoints(activeDevice);
+	int activeDevice;
+	auto deviceNames = GetAudioEndpoints(&activeDevice);
 
 	for (auto i = 0; i < deviceNames.size(); i++)
 	{
@@ -201,7 +194,6 @@ void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	switch (LOWORD(wParam))
 	{
 	case IDM_EXIT:
-		//MessageBox(NULL, L"Exit clicked.", L"clicked", MB_OK);
 		RemoveTrayIcon(hWnd);
 		PostMessage(hWnd, WM_QUIT, 0, 0);
 		break;
@@ -212,7 +204,7 @@ void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-std::vector<std::wstring> GetAudioEndpoints(int& activeDevice)
+std::vector<std::wstring> GetAudioEndpoints(int* activeDevice)
 {
 	HRESULT hr = S_OK;
 	IMMDeviceEnumerator* pEnumerator = NULL;
@@ -268,7 +260,7 @@ std::vector<std::wstring> GetAudioEndpoints(int& activeDevice)
 
 		if (defaultDeviceIdReadable == currentAudioDeviceId)
 		{
-			activeDevice = int(i);
+			*activeDevice = int(i);
 		}
 
 		hr = pEndpoint->OpenPropertyStore(
