@@ -69,6 +69,10 @@ void CreateTrayIcon(HWND hWnd)
 	nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
 
 	auto success = !Shell_NotifyIcon(NIM_ADD, &nid);
+	if (!success)
+	{
+		MessageBox(NULL, L"An error occurred while trying to create the tray icon.", L"Error!", MB_OK);
+	}
 }
 
 void RemoveTrayIcon(HWND hWnd)
