@@ -8,7 +8,7 @@
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
-const int IDM_EXIT = 200;
+const int IDM_EXIT = 199;
 int cmd;
 
 HINSTANCE hInst;
@@ -23,7 +23,8 @@ void RemoveTrayIcon(HWND hWnd);
 void ModifyTrayIcon(HWND hWnd);
 void HandleOutputsMenu(HWND hWnd);
 void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam);
-std::vector<std::wstring> GetAudioEndpoints();
+std::vector<std::wstring> GetAudioEndpoints(int& activeDevice);
+void SetDefaultAudioPlaybackDevice(int device);
 
 int TrayIcon::RunApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,	int nCmdShow)
 {
@@ -164,11 +165,19 @@ void HandleOutputsMenu(HWND hWnd)
 
 	audioOutputsMenu = CreatePopupMenu();
 
-	auto deviceNames = GetAudioEndpoints();
+	int activeDevice = -1;
+	auto deviceNames = GetAudioEndpoints(activeDevice);
 
 	for (auto i = 0; i < deviceNames.size(); i++)
 	{
-		InsertMenu(audioOutputsMenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT + (i + 1), deviceNames.at(i).c_str());
+		if (i == activeDevice)
+		{
+			InsertMenu(audioOutputsMenu, 0, MF_BYPOSITION | MF_STRING | MF_CHECKED, IDM_EXIT + (i + 1), deviceNames.at(i).c_str());
+		}
+		else
+		{
+			InsertMenu(audioOutputsMenu, 0, MF_BYPOSITION | MF_STRING, IDM_EXIT + (i + 1), deviceNames.at(i).c_str());
+		}
 	}
 	InsertMenu(audioOutputsMenu, deviceNames.size() + 1, MF_BYPOSITION | MF_STRING, IDM_EXIT, L"Exit");
 
@@ -194,21 +203,24 @@ void HandleOutputsSelection(HWND hWnd, WPARAM wParam, LPARAM lParam)
 		PostMessage(hWnd, WM_QUIT, 0, 0);
 		break;
 	default:
-		if (wParam - 200 < 1) break;
-		// Do things here.
+		if (wParam - 200 < 0) break;
+		SetDefaultAudioPlaybackDevice(wParam - 200);
 		break;
 	}
 }
 
-std::vector<std::wstring> GetAudioEndpoints()
+std::vector<std::wstring> GetAudioEndpoints(int& activeDevice)
 {
 	HRESULT hr = S_OK;
 	IMMDeviceEnumerator* pEnumerator = NULL;
 	IMMDeviceCollection* pCollection = NULL;
 	IMMDevice* pEndpoint = NULL;
 	IPropertyStore* pProps = NULL;
+	DWORD pdwState = NULL;
 	LPWSTR pwszID = NULL;
+	LPWSTR defaultDeviceId = NULL;
 	std::vector<std::wstring> names;
+	std::wstring defaultDeviceIdReadable;
 
 	hr = CoCreateInstance(
 		CLSID_MMDeviceEnumerator, NULL,
@@ -229,17 +241,36 @@ std::vector<std::wstring> GetAudioEndpoints()
 	{
 		return names;
 	}
+
+	hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pEndpoint);
+	EXIT_ON_ERROR(hr)
+
+	hr = pEndpoint->GetId(&defaultDeviceId);
+	EXIT_ON_ERROR(hr)
+
+	defaultDeviceIdReadable = std::wstring(defaultDeviceId);
+
 	// Each loop prints the name of an endpoint device.
 	for (ULONG i = 0; i < count; i++)
 	{
 		// Get pointer to endpoint number i.
 		hr = pCollection->Item(i, &pEndpoint);
+		EXIT_ON_ERROR(hr)
 
 		// Get the endpoint ID string.
 		hr = pEndpoint->GetId(&pwszID);
+		EXIT_ON_ERROR(hr)
+
+		auto currentAudioDeviceId = std::wstring(pwszID);
+
+		if (defaultDeviceIdReadable == currentAudioDeviceId)
+		{
+			activeDevice = int(i);
+		}
 
 		hr = pEndpoint->OpenPropertyStore(
 			STGM_READ, &pProps);
+		EXIT_ON_ERROR(hr)
 
 		PROPVARIANT varName;
 		// Initialize container for property value.
@@ -247,6 +278,7 @@ std::vector<std::wstring> GetAudioEndpoints()
 
 		// Get the endpoint's friendly-name property.
 		hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);
+		EXIT_ON_ERROR(hr)
 
 		names.emplace_back(varName.pwszVal);
 
@@ -268,4 +300,61 @@ Exit:
 	SAFE_RELEASE(pEndpoint)
 	SAFE_RELEASE(pProps)
 	return names;
+}
+
+void SetDefaultAudioPlaybackDevice(int device)
+{
+	HRESULT hr = S_OK;
+	IMMDeviceEnumerator* pEnumerator = NULL;
+	IMMDeviceCollection* pCollection = NULL;
+	IMMDevice* pEndpoint = NULL;
+	LPWSTR devID;
+	IPolicyConfigVista* pPolicyConfig;
+	ERole reserved = eConsole;
+
+	hr = CoCreateInstance(
+		CLSID_MMDeviceEnumerator, NULL,
+		CLSCTX_ALL, IID_IMMDeviceEnumerator,
+		(void**)&pEnumerator);
+	EXIT_ON_ERROR(hr)
+
+	hr = pEnumerator->EnumAudioEndpoints(
+		 eRender, DEVICE_STATE_ACTIVE,
+		 &pCollection);
+	EXIT_ON_ERROR(hr)
+
+	UINT  count;
+	hr = pCollection->GetCount(&count);
+	EXIT_ON_ERROR(hr)
+
+	if (device > count)
+	{
+		return;
+	}
+
+	hr = pCollection->Item(device, &pEndpoint);
+	EXIT_ON_ERROR(hr)
+
+	// Get the endpoint ID string.
+	hr = pEndpoint->GetId(&devID);
+	EXIT_ON_ERROR(hr)
+
+	hr = CoCreateInstance(__uuidof(CPolicyConfigVistaClient),
+		NULL, CLSCTX_ALL, __uuidof(IPolicyConfigVista), (LPVOID*)&pPolicyConfig);
+	EXIT_ON_ERROR(hr)
+	
+	hr = pPolicyConfig->SetDefaultEndpoint(devID, reserved);
+	pPolicyConfig->Release();
+
+	SAFE_RELEASE(pEnumerator)
+	SAFE_RELEASE(pCollection)
+	SAFE_RELEASE(pEndpoint)
+	return;
+
+Exit:
+	MessageBox(NULL, L"Something went wrong while setting your active audio device!.", L"Error!", MB_OK);
+	SAFE_RELEASE(pEnumerator)
+	SAFE_RELEASE(pCollection)
+	SAFE_RELEASE(pEndpoint)
+	return;
 }

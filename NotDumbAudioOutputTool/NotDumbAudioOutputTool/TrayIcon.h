@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform.h"
+#include "PolicyConfig.h"
 
 #define WM_MYMESSAGE (WM_USER + 1)
 #define MAX_LOADSTRING 100

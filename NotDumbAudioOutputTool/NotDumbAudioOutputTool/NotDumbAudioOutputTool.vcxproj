@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="AudioOutputHandler.h" />
     <ClInclude Include="platform.h" />
+    <ClInclude Include="PolicyConfig.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TrayIcon.h" />
   </ItemGroup>

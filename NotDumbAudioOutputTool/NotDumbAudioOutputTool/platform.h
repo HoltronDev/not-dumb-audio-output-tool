@@ -11,4 +11,5 @@
 #include <vector>
 #include <string>
 #include <atlstr.h>
+#include <mmreg.h>
 #endif
